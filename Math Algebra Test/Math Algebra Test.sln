@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.33214.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Math Algebra Test", "Math Algebra Test\Math Algebra Test.vcxproj", "{15F81AD2-1746-4482-A0D9-9FCD7C58F813}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{15F81AD2-1746-4482-A0D9-9FCD7C58F813}.Debug|x64.ActiveCfg = Debug|x64
+		{15F81AD2-1746-4482-A0D9-9FCD7C58F813}.Debug|x64.Build.0 = Debug|x64
+		{15F81AD2-1746-4482-A0D9-9FCD7C58F813}.Debug|x86.ActiveCfg = Debug|Win32
+		{15F81AD2-1746-4482-A0D9-9FCD7C58F813}.Debug|x86.Build.0 = Debug|Win32
+		{15F81AD2-1746-4482-A0D9-9FCD7C58F813}.Release|x64.ActiveCfg = Release|x64
+		{15F81AD2-1746-4482-A0D9-9FCD7C58F813}.Release|x64.Build.0 = Release|x64
+		{15F81AD2-1746-4482-A0D9-9FCD7C58F813}.Release|x86.ActiveCfg = Release|Win32
+		{15F81AD2-1746-4482-A0D9-9FCD7C58F813}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6924252C-D281-4334-96B2-A842F97050A4}
+	EndGlobalSection
+EndGlobal

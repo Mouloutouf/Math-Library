@@ -1,0 +1,5 @@
+﻿  Math Algebra Test.cpp
+C:\Documents\__PROG\_C++\_Learning\Math Library\Math Algebra Test\Math Algebra Test\Math Algebra Test.cpp(52,5): error C2804: binary 'operator ==' has too many parameters
+C:\Documents\__PROG\_C++\_Learning\Math Library\Math Algebra Test\Math Algebra Test\Math Algebra Test.cpp(52,5): error C2333: 'Vector3::operator ==': error in function declaration; skipping function body
+C:\Documents\__PROG\_C++\_Learning\Math Library\Math Algebra Test\Math Algebra Test\Math Algebra Test.cpp(56,5): error C2804: binary 'operator !=' has too many parameters
+C:\Documents\__PROG\_C++\_Learning\Math Library\Math Algebra Test\Math Algebra Test\Math Algebra Test.cpp(56,5): error C2333: 'Vector3::operator !=': error in function declaration; skipping function body
