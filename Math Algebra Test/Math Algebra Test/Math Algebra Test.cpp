@@ -28,11 +28,15 @@ struct Vector3
         return Vector3(x / length, y / length, z / length);
     }
 
+    static float dot(const Vector3& a, const Vector3& b)
+    {
+        return (a.x * b.x) + (a.y * b.y);
+    }
+
     static float angle(const Vector3& a, const Vector3& b)
     {
         return acos(
-            ((a.x * b.x) + (a.y * b.y)) /
-            (a.magnitude() * b.magnitude())
+            dot(a, b) / (a.magnitude() * b.magnitude())
         );
     }
 
