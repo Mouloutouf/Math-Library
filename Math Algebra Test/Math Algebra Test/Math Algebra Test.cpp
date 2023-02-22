@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <SFML\Graphics.hpp>
 
 struct Vector3
 {
