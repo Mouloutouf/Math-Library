@@ -1,6 +1,3 @@
-// Math Algebra Test.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include <cmath>
 #include <vector>
@@ -68,7 +65,7 @@ struct Vector3
     }
     friend Vector3 operator-(Vector3 left, const Vector3& right)
     {
-        left += right;
+        left -= right;
         return left;
     }
 
@@ -100,17 +97,48 @@ struct Vector3
         return left;
     }
 
-    inline bool operator==(const Vector3& right)
+    inline friend bool operator==(const Vector3& left, const Vector3& right)
     {
-        return x == right.x && y == right.y && z == right.z;
+        return left.x == right.x && left.y == right.y && left.z == right.z;
     }
-    inline bool operator!=(const Vector3& right)
+    inline friend bool operator!=(const Vector3& left, const Vector3& right)
     {
-        return !(*this == right);
+        return !(left == right);
+    }
+
+    inline friend bool operator<(const Vector3& left, const Vector3& right)
+    {
+        return left.magnitude() < right.magnitude();
+    }
+    inline friend bool operator>(const Vector3& left, const Vector3& right)
+    {
+        return right < left;
+    }
+    inline friend bool operator<=(const Vector3& left, const Vector3& right)
+    {
+        return !(left > right);
+    }
+    inline friend bool operator>=(const Vector3& left, const Vector3& right)
+    {
+        return !(left < right);
     }
 
     float x, y, z;
+
+    static const Vector3 zero;
+    static const Vector3 one;
+    static const Vector3 right;
+    static const Vector3 up;
+    static const Vector3 left;
+    static const Vector3 down;
 };
+
+Vector3 const Vector3::zero = Vector3(0, 0, 0);
+Vector3 const Vector3::one = Vector3(1, 1, 1);
+Vector3 const Vector3::right = Vector3(1, 0, 0);
+Vector3 const Vector3::up = Vector3(0, 1, 0);
+Vector3 const Vector3::left = Vector3(-1, 0, 0);
+Vector3 const Vector3::down = Vector3(0, -1, 0);
 
 struct Sphere
 {
@@ -148,11 +176,6 @@ bool PointInSphere(const Vector3& _pos, const Sphere& _sphere)
     return (_pos - _sphere.position).magnitude() <= _sphere.radius;
 }
 
-bool PointInCube(const Vector3& _pos, const Cube& _cube)
-{
-    return PointInCuboid(_pos, _cube);
-}
-
 bool PointInCuboid(const Vector3& _pos, const Cuboid& _cuboid)
 {
     float cubeMinX = _cuboid.position.x - _cuboid.length / 2;
@@ -167,34 +190,161 @@ bool PointInCuboid(const Vector3& _pos, const Cuboid& _cuboid)
     return (_pos.x <= cubeMaxX && _pos.x >= cubeMinX) && (_pos.y <= cubeMaxY && _pos.y >= cubeMinY) && (_pos.z <= cubeMaxZ && _pos.z >= cubeMinZ);
 }
 
-bool RayIntersectSphere(const Vector3& _startPos, const Vector3& _targetPos, const Sphere& _sphere)
+bool PointInCube(const Vector3& _pos, const Cube& _cube)
 {
-    // Calculate dir to target
-    Vector3 targetDir = _targetPos - _startPos;
-    // Calculate dir to obstacle
-    Vector3 obstacleDir = _sphere.position - _startPos;
+    return PointInCuboid(_pos, _cube);
+}
 
-    // Calculate angle between target dir and obstacle dir
-    float angle = Vector3::angle(targetDir, obstacleDir);
+bool RayIntersectSphere(const Vector3& _startPos, const Vector3& _targetPos, const Sphere& _sphere, Vector3& _outProjectedPos)
+{
+    // Calculate target axis relative to start
+    Vector3 targetAxis = _targetPos - _startPos;
+    // Calculate obstacle axis relative to start
+    Vector3 obstacleAxis = _sphere.position - _startPos;
 
-    // Calculate scalar projection of obstacle dir onto target dir
-    Vector3 projectedDir = targetDir.normalize() * (obstacleDir.magnitude() * cos(angle));
+    // Calculate angle between target axis and obstacle axis
+    float angle = Vector3::angle(targetAxis, obstacleAxis);
+
+    // Calculate scalar projection of obstacle axis onto target axis
+    float projectionValue = obstacleAxis.magnitude() * cos(angle);
+    // Clamp projection value to target axis length
+    projectionValue = std::min(projectionValue, targetAxis.magnitude());
+    projectionValue = std::max(projectionValue, 0.0f);
+    // Calculate projected axis with normalized direction of target axis
+    Vector3 projectedAxis = targetAxis.normalize() * projectionValue;
+
+    // Return projected pos relative to world
+    _outProjectedPos = projectedAxis + _startPos;
 
     // Compare length of perpendicular vector between obstacle and projected to length of the obstacle radius
-    return (projectedDir - obstacleDir).magnitude() <= _sphere.radius;
+    return (projectedAxis - obstacleAxis).magnitude() <= _sphere.radius;
 }
 
 bool RaycastTarget(const Vector3& _startPos, const Vector3& _targetPos, std::vector<Sphere> _obstacles)
 {
     for (int i = 0; i < _obstacles.size(); ++i)
     {
-        if (RayIntersectSphere(_startPos, _targetPos, _obstacles[i]))
+        Vector3 _;
+        if (RayIntersectSphere(_startPos, _targetPos, _obstacles[i], _))
             return false;
     }
     return true;
 }
 
+struct Runner
+{
+    Runner(sf::RenderWindow& _window)
+        : window(_window) {}
+
+    sf::RenderWindow& window;
+
+    sf::Vector2i mousePosition;
+
+    void DrawLine(Vector3 a, Vector3 b, sf::Color color)
+    {
+        sf::Vertex line[] = {
+            sf::Vertex(sf::Vector2(a.x, a.y), color),
+            sf::Vertex(sf::Vector2(b.x, b.y), color)
+        };
+
+        window.draw(line, 2, sf::Lines);
+    }
+
+    void DrawSphere(Vector3 center, float radius, sf::Color fillColor, sf::Color outlineColor)
+    {
+        sf::CircleShape circle(radius);
+
+        circle.setFillColor(fillColor);
+        circle.setOutlineThickness(1);
+        circle.setOutlineColor(outlineColor);
+
+        circle.setPosition(center.x - radius, center.y - radius);
+
+        window.draw(circle);
+    }
+
+    void RunLineIntersectSphereExample()
+    {
+        Vector3 startPos(360, 480, 0);
+        Vector3 targetPos(470, 60, 0);
+        Vector3 spherePos(mousePosition.x, mousePosition.y, 0);
+        Sphere sphere(spherePos, 100);
+
+        Vector3 projectedPos;
+        bool intersect = RayIntersectSphere(startPos, targetPos, sphere, projectedPos);
+
+        sf::Color outlineColor = sf::Color::Transparent;
+        if (intersect == true)
+            outlineColor = sf::Color::Green;
+
+        DrawSphere(sphere.position, sphere.radius, sf::Color(20, 20, 20), outlineColor);
+
+        DrawLine(startPos, targetPos, sf::Color::White);
+        DrawLine(startPos, spherePos, sf::Color::Yellow);
+        DrawLine(spherePos, projectedPos, sf::Color::Red);
+    }
+
+    void RunLineIntersectSpheresExample()
+    {
+        Vector3 startPos(480, 500, 0);
+        Vector3 targetPos(mousePosition.x, mousePosition.y, 0);
+
+        int sphereCount = 3;
+        Sphere spheres[] = {
+            Sphere(Vector3(100, 100, 0), 50),
+            Sphere(Vector3(800, 350, 0), 70),
+            Sphere(Vector3(500, 250, 0), 100)
+        };
+
+        for (int i = 0; i < sphereCount; ++i)
+        {
+            Sphere& sphere = spheres[i];
+            Vector3 projectedPos;
+            bool intersect = RayIntersectSphere(startPos, targetPos, sphere, projectedPos);
+
+            sf::Color outlineColor = intersect ? sf::Color::Green : sf::Color::Transparent;
+
+            DrawSphere(sphere.position, sphere.radius, sf::Color(20, 20, 20), outlineColor);
+
+            if (intersect == true)
+            {
+                DrawLine(startPos, sphere.position, sf::Color::Yellow);
+                DrawLine(sphere.position, projectedPos, sf::Color::Red);
+            }
+        }
+
+        DrawLine(startPos, targetPos, sf::Color::White);
+    }
+
+    void Run()
+    {
+        window.clear(sf::Color::Black);
+
+        mousePosition = sf::Mouse::getPosition(window);
+        RunLineIntersectSpheresExample();
+
+        window.display();
+    }
+};
+
 int main()
 {
-    // Test your code with SFML graphics library
+    sf::RenderWindow window(sf::VideoMode(960, 540), "Math Test");
+    window.setPosition(sf::Vector2(960, 540));
+
+    Runner runner(window);
+
+    while (window.isOpen())
+    {
+        runner.Run();
+
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed)
+                window.close();
+        }
+    }
+
+    return 0;
 }
